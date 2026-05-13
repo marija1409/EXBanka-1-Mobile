@@ -3,6 +3,15 @@ import SwiftUI
 struct LoginView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel: LoginViewModel
+    @AppStorage(ServerEnvironment.storageKey)   private var envRawValue: String = ServerEnvironment.instance1.rawValue
+    @AppStorage(ServerEnvironment.customURLKey) private var customURL: String = ""
+
+    private var selectedEnv: Binding<ServerEnvironment> {
+        Binding(
+            get: { ServerEnvironment(rawValue: envRawValue) ?? .instance1 },
+            set: { envRawValue = $0.rawValue }
+        )
+    }
 
     init() {
         _viewModel = StateObject(wrappedValue: LoginViewModel(appState: AppState.shared))
@@ -63,6 +72,31 @@ struct LoginView: View {
                 .cornerRadius(AppTheme.cornerRadius * 1.4)
                 .shadow(color: Color.appForeground.opacity(0.08), radius: 12, x: 0, y: 4)
                 .padding(.horizontal, AppTheme.padding)
+
+                VStack(spacing: AppTheme.smallPadding) {
+                    Picker("Backend", selection: selectedEnv) {
+                        ForEach(ServerEnvironment.allCases) { env in
+                            Text(env.displayName).tag(env)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .tint(.appMutedForeground)
+
+                    if selectedEnv.wrappedValue == .custom {
+                        TextField("https://example.com/api/v3", text: $customURL)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .keyboardType(.URL)
+                            .padding(10)
+                            .background(Color.appCard)
+                            .cornerRadius(AppTheme.cornerRadius)
+                            .foregroundColor(.appForeground)
+                            .font(.system(size: 13, design: .monospaced))
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                }
+                .animation(.easeInOut(duration: 0.2), value: selectedEnv.wrappedValue)
+                .padding(.top, AppTheme.padding)
 
                 Spacer()
             }

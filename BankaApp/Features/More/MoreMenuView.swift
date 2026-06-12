@@ -3,15 +3,8 @@ import SwiftUI
 struct MoreMenuView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var themeManager: ThemeManager
-    @AppStorage(ServerEnvironment.storageKey)   private var envRawValue: String = ServerEnvironment.instance1.rawValue
-    @AppStorage(ServerEnvironment.customURLKey) private var customURL: String = ""
-
-    private var selectedEnv: Binding<ServerEnvironment> {
-        Binding(
-            get: { ServerEnvironment(rawValue: envRawValue) ?? .instance1 },
-            set: { envRawValue = $0.rawValue }
-        )
-    }
+    @ObservedObject private var backendConfig = BackendConfig.shared
+    @State private var showBackendSelector = false
 
     var body: some View {
         ZStack {
@@ -64,41 +57,28 @@ struct MoreMenuView: View {
                                 )
                             }
                             Divider().padding(.leading, AppTheme.padding + 24 + AppTheme.padding)
-                            HStack(spacing: AppTheme.padding) {
-                                Image(systemName: "server.rack")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.appPrimary)
-                                    .frame(width: 24)
-                                Picker("Backend", selection: selectedEnv) {
-                                    ForEach(ServerEnvironment.allCases) { env in
-                                        Text(env.displayName).tag(env)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                                .tint(.appForeground)
-                            }
-                            .padding(.horizontal, AppTheme.padding)
-                            .padding(.vertical, 14)
-
-                            if selectedEnv.wrappedValue == .custom {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Custom URL")
+                            Button(action: { showBackendSelector = true }) {
+                                HStack(spacing: AppTheme.padding) {
+                                    Image(systemName: "server.rack")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.appPrimary)
+                                        .frame(width: 24)
+                                    Text("Backend Server")
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.appForeground)
+                                    Spacer()
+                                    Text(backendConfig.displayName)
                                         .font(.caption)
                                         .foregroundColor(.appMutedForeground)
-                                        .padding(.horizontal, AppTheme.padding)
-                                    TextField("https://example.com/api/v3", text: $customURL)
-                                        .textInputAutocapitalization(.never)
-                                        .autocorrectionDisabled()
-                                        .keyboardType(.URL)
-                                        .padding(10)
-                                        .background(Color.appMuted)
-                                        .cornerRadius(AppTheme.cornerRadius)
-                                        .foregroundColor(.appForeground)
-                                        .font(.system(size: 13, design: .monospaced))
-                                        .padding(.horizontal, AppTheme.padding)
+                                        .lineLimit(1)
+                                        .truncationMode(.middle)
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.appMutedForeground)
                                 }
-                                .padding(.bottom, AppTheme.padding)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
+                                .padding(.horizontal, AppTheme.padding)
+                                .padding(.vertical, 14)
+                                .contentShape(Rectangle())
                             }
                         }
 
@@ -108,13 +88,15 @@ struct MoreMenuView: View {
                         .padding(.top, AppTheme.padding)
                     }
                     .padding(.horizontal, AppTheme.padding)
-                    .animation(.easeInOut(duration: 0.2), value: envRawValue)
                 }
                 .padding(.top, AppTheme.padding)
             }
         }
         .navigationTitle("More")
         .navigationBarTitleDisplayMode(.large)
+        .sheet(isPresented: $showBackendSelector) {
+            BackendSelectorView()
+        }
     }
 
     private func logout() async {

@@ -2,7 +2,9 @@ import SwiftUI
 
 struct ActivationRequestView: View {
     @StateObject private var viewModel = ActivationRequestViewModel()
+    @ObservedObject private var backendConfig = BackendConfig.shared
     @State private var navigateToCode = false
+    @State private var showBackendSelector = false
 
     var body: some View {
         NavigationStack {
@@ -61,6 +63,20 @@ struct ActivationRequestView: View {
                     .shadow(color: Color.appForeground.opacity(0.08), radius: 12, x: 0, y: 4)
                     .padding(.horizontal, AppTheme.padding)
 
+                    Button(action: { showBackendSelector = true }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "server.rack")
+                            Text(backendConfig.displayName)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10, weight: .semibold))
+                        }
+                        .font(.caption)
+                        .foregroundColor(.appMutedForeground)
+                    }
+                    .padding(.top, AppTheme.padding)
+
                     Spacer()
                 }
             }
@@ -69,6 +85,9 @@ struct ActivationRequestView: View {
             }
             .navigationDestination(isPresented: $navigateToCode) {
                 ActivationCodeView(email: viewModel.email)
+            }
+            .sheet(isPresented: $showBackendSelector) {
+                BackendSelectorView()
             }
         }
     }

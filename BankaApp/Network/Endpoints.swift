@@ -1,7 +1,8 @@
 import Foundation
 
 enum Endpoint {
-    static var baseURL: String { ServerEnvironment.current.baseURL }
+    // Selected at runtime via the backend selector on the activation screen.
+    static var baseURL: String { BackendConfig.currentBaseURL }
 
     // Existing
     case login
@@ -50,54 +51,141 @@ enum Endpoint {
     case myLoanInstallments(loanId: Int)
     case myPortfolio
     case myPortfolioSummary
+    case myHoldingTransactions(holdingId: Int, direction: String?, page: Int, pageSize: Int)
     case myOrders
     case myOrderDetail(id: Int)
     case exchangeRates
 
     var urlString: String {
-        let base = Endpoint.baseURL
         switch self {
-        case .login:                          return "\(base)/auth/login"
-        case .logout:                         return "\(base)/auth/logout"
-        case .me:                             return "\(base)/me"
-        case .myAccounts:                     return "\(base)/me/accounts"
-        case .paymentsForAccount(let id):     return "\(base)/accounts/\(id)/payments"
-        case .mobileRequestActivation:        return "\(base)/mobile/auth/request-activation"
-        case .mobileActivate:                 return "\(base)/mobile/auth/activate"
-        case .mobileRefresh:                  return "\(base)/mobile/auth/refresh"
-        case .mobileDevice:                   return "\(base)/mobile/device"
-        case .mobileDeviceDeactivate:         return "\(base)/mobile/device/deactivate"
-        case .mobileDeviceTransfer:           return "\(base)/mobile/device/transfer"
-        case .pendingVerifications:           return "\(base)/mobile/verifications/pending"
-        case .submitVerification(let id):     return "\(base)/mobile/verifications/\(id)/submit"
-        case .ackVerification(let id):        return "\(base)/mobile/verifications/\(id)/ack"
-        case .biometricVerification(let id):  return "\(base)/mobile/verifications/\(id)/biometric"
-        case .qrVerify(let id):               return "\(base)/verify/\(id)"
-        case .setBiometrics, .getBiometrics:  return "\(base)/mobile/device/biometrics"
-        case .notifications:                  return "\(base)/me/notifications"
-        case .notificationUnreadCount:        return "\(base)/me/notifications/unread-count"
-        case .markNotificationRead(let id):   return "\(base)/me/notifications/\(id)/read"
-        case .markAllNotificationsRead:       return "\(base)/me/notifications/read-all"
-        case .myAccountDetail(let id):        return "\(base)/me/accounts/\(id)"
-        case .myCards:                        return "\(base)/me/cards"
-        case .myCardDetail(let id):           return "\(base)/me/cards/\(id)"
-        case .myPayments:                     return "\(base)/me/payments"
-        case .myPaymentDetail(let id):        return "\(base)/me/payments/\(id)"
-        case .myTransfers:                    return "\(base)/me/transfers"
-        case .myTransferDetail(let id):       return "\(base)/me/transfers/\(id)"
-        case .myLoans:                        return "\(base)/me/loans"
-        case .myLoanDetail(let id):           return "\(base)/me/loans/\(id)"
-        case .myLoanInstallments(let id):     return "\(base)/me/loans/\(id)/installments"
-        case .myPortfolio:                    return "\(base)/me/portfolio"
-        case .myPortfolioSummary:             return "\(base)/me/portfolio/summary"
-        case .myOrders:                       return "\(base)/me/orders"
-        case .myOrderDetail(let id):          return "\(base)/me/orders/\(id)"
-        case .exchangeRates:                  return "\(base)/exchange/rates"
+        case .login:
+            return "\(Endpoint.baseURL)/api/v3/auth/login"
+        case .logout:
+            return "\(Endpoint.baseURL)/api/v3/auth/logout"
+        case .me:
+            return "\(Endpoint.baseURL)/api/v3/me"
+        case .myAccounts:
+            return "\(Endpoint.baseURL)/api/v3/me/accounts"
+        case .paymentsForAccount(let id):
+            return "\(Endpoint.baseURL)/api/v3/accounts/\(id)/payments"
+
+        case .mobileRequestActivation:
+            return "\(Endpoint.baseURL)/api/v3/mobile/auth/request-activation"
+        case .mobileActivate:
+            return "\(Endpoint.baseURL)/api/v3/mobile/auth/activate"
+        case .mobileRefresh:
+            return "\(Endpoint.baseURL)/api/v3/mobile/auth/refresh"
+
+        case .mobileDevice:
+            return "\(Endpoint.baseURL)/api/v3/mobile/device"
+        case .mobileDeviceDeactivate:
+            return "\(Endpoint.baseURL)/api/v3/mobile/device/deactivate"
+        case .mobileDeviceTransfer:
+            return "\(Endpoint.baseURL)/api/v3/mobile/device/transfer"
+
+        case .pendingVerifications:
+            return "\(Endpoint.baseURL)/api/v3/mobile/verifications/pending"
+        case .submitVerification(let id):
+            return "\(Endpoint.baseURL)/api/v3/mobile/verifications/\(id)/submit"
+        case .ackVerification(let id):
+            return "\(Endpoint.baseURL)/api/v3/mobile/verifications/\(id)/ack"
+        case .biometricVerification(let id):
+            return "\(Endpoint.baseURL)/api/v3/mobile/verifications/\(id)/biometric"
+        case .qrVerify(let id):
+            return "\(Endpoint.baseURL)/api/v3/verify/\(id)"
+
+        case .setBiometrics, .getBiometrics:
+            return "\(Endpoint.baseURL)/api/v3/mobile/device/biometrics"
+
+        case .notifications:
+            return "\(Endpoint.baseURL)/api/v3/me/notifications"
+        case .notificationUnreadCount:
+            return "\(Endpoint.baseURL)/api/v3/me/notifications/unread-count"
+        case .markNotificationRead(let id):
+            return "\(Endpoint.baseURL)/api/v3/me/notifications/\(id)/read"
+        case .markAllNotificationsRead:
+            return "\(Endpoint.baseURL)/api/v3/me/notifications/read-all"
+
+        case .myAccountDetail(let id):
+            return "\(Endpoint.baseURL)/api/v3/me/accounts/\(id)"
+        case .myCards:
+            return "\(Endpoint.baseURL)/api/v3/me/cards"
+        case .myCardDetail(let id):
+            return "\(Endpoint.baseURL)/api/v3/me/cards/\(id)"
+        case .myPayments:
+            return "\(Endpoint.baseURL)/api/v3/me/payments"
+        case .myPaymentDetail(let id):
+            return "\(Endpoint.baseURL)/api/v3/me/payments/\(id)"
+        case .myTransfers:
+            return "\(Endpoint.baseURL)/api/v3/me/transfers"
+        case .myTransferDetail(let id):
+            return "\(Endpoint.baseURL)/api/v3/me/transfers/\(id)"
+        case .myLoans:
+            return "\(Endpoint.baseURL)/api/v3/me/loans"
+        case .myLoanDetail(let id):
+            return "\(Endpoint.baseURL)/api/v3/me/loans/\(id)"
+        case .myLoanInstallments(let id):
+            return "\(Endpoint.baseURL)/api/v3/me/loans/\(id)/installments"
+        case .myPortfolio:
+            return "\(Endpoint.baseURL)/api/v3/me/portfolio"
+        case .myPortfolioSummary:
+            return "\(Endpoint.baseURL)/api/v3/me/portfolio/summary"
+        case .myHoldingTransactions(let holdingId, let direction, let page, let pageSize):
+            var url = "\(Endpoint.baseURL)/api/v3/me/holdings/\(holdingId)/transactions?page=\(page)&page_size=\(pageSize)"
+            if let direction {
+                url += "&direction=\(direction)"
+            }
+            return url
+        case .myOrders:
+            return "\(Endpoint.baseURL)/api/v3/me/orders"
+        case .myOrderDetail(let id):
+            return "\(Endpoint.baseURL)/api/v3/me/orders/\(id)"
+        case .exchangeRates:
+            return "\(Endpoint.baseURL)/api/v3/exchange/rates"
         }
     }
 
     var path: String {
-        URL(string: urlString)?.path ?? ""
+        switch self {
+        case .login: return "/api/v3/auth/login"
+        case .logout: return "/api/v3/auth/logout"
+        case .me: return "/api/v3/me"
+        case .myAccounts: return "/api/v3/me/accounts"
+        case .paymentsForAccount(let id):
+            return "/api/v3/accounts/\(id)/payments"
+        case .mobileRequestActivation: return "/api/v3/mobile/auth/request-activation"
+        case .mobileActivate: return "/api/v3/mobile/auth/activate"
+        case .mobileRefresh: return "/api/v3/mobile/auth/refresh"
+        case .mobileDevice: return "/api/v3/mobile/device"
+        case .mobileDeviceDeactivate: return "/api/v3/mobile/device/deactivate"
+        case .mobileDeviceTransfer: return "/api/v3/mobile/device/transfer"
+        case .pendingVerifications: return "/api/v3/mobile/verifications/pending"
+        case .submitVerification(let id): return "/api/v3/mobile/verifications/\(id)/submit"
+        case .ackVerification(let id): return "/api/v3/mobile/verifications/\(id)/ack"
+        case .biometricVerification(let id): return "/api/v3/mobile/verifications/\(id)/biometric"
+        case .qrVerify(let id): return "/api/v3/verify/\(id)"
+        case .setBiometrics, .getBiometrics: return "/api/v3/mobile/device/biometrics"
+        case .notifications: return "/api/v3/me/notifications"
+        case .notificationUnreadCount: return "/api/v3/me/notifications/unread-count"
+        case .markNotificationRead(let id): return "/api/v3/me/notifications/\(id)/read"
+        case .markAllNotificationsRead: return "/api/v3/me/notifications/read-all"
+        case .myAccountDetail(let id): return "/api/v3/me/accounts/\(id)"
+        case .myCards: return "/api/v3/me/cards"
+        case .myCardDetail(let id): return "/api/v3/me/cards/\(id)"
+        case .myPayments: return "/api/v3/me/payments"
+        case .myPaymentDetail(let id): return "/api/v3/me/payments/\(id)"
+        case .myTransfers: return "/api/v3/me/transfers"
+        case .myTransferDetail(let id): return "/api/v3/me/transfers/\(id)"
+        case .myLoans: return "/api/v3/me/loans"
+        case .myLoanDetail(let id): return "/api/v3/me/loans/\(id)"
+        case .myLoanInstallments(let id): return "/api/v3/me/loans/\(id)/installments"
+        case .myPortfolio: return "/api/v3/me/portfolio"
+        case .myPortfolioSummary: return "/api/v3/me/portfolio/summary"
+        case .myHoldingTransactions(let holdingId, _, _, _): return "/api/v3/me/holdings/\(holdingId)/transactions"
+        case .myOrders: return "/api/v3/me/orders"
+        case .myOrderDetail(let id): return "/api/v3/me/orders/\(id)"
+        case .exchangeRates: return "/api/v3/exchange/rates"
+        }
     }
 
     var method: String {

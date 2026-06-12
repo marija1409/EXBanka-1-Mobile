@@ -3,7 +3,7 @@ import Combine
 
 @MainActor
 final class PortfolioViewModel: ObservableObject {
-    @Published var holdings: [Holding] = []
+    @Published var portfolio: PortfolioResponse?
     @Published var summary: PortfolioSummary?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
@@ -14,24 +14,38 @@ final class PortfolioViewModel: ObservableObject {
         self.appState = appState
     }
 
+    var securityPositions: [SecurityPosition] {
+        portfolio?.securities?.positions ?? []
+    }
+
+    var fundPositions: [FundPosition] {
+        portfolio?.funds?.positions ?? []
+    }
+
+    var isEmpty: Bool {
+        securityPositions.isEmpty && fundPositions.isEmpty
+    }
+
     func load() async {
         guard let token = appState.accessToken else { return }
         isLoading = true
+        errorMessage = nil
         defer { isLoading = false }
         do {
-            async let holdingsReq: HoldingsResponse = APIClient.shared.request(
+            async let portfolioReq: PortfolioResponse = APIClient.shared.request(
                 endpoint: .myPortfolio,
                 accessToken: token,
                 deviceId: appState.deviceId
             )
+            // The summary object's shape is not pinned by the v3 doc, so it is
+            // fetched best-effort and only adds detail when fields are present.
             async let summaryReq: PortfolioSummary = APIClient.shared.request(
                 endpoint: .myPortfolioSummary,
                 accessToken: token,
                 deviceId: appState.deviceId
             )
-            let (h, s) = try await (holdingsReq, summaryReq)
-            self.holdings = h.holdings
-            self.summary = s
+            self.portfolio = try await portfolioReq
+            self.summary = try? await summaryReq
         } catch {
             errorMessage = error.localizedDescription
         }

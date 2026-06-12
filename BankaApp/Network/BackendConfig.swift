@@ -18,6 +18,8 @@ final class BackendConfig: ObservableObject {
 
     static let presets: [Preset] = [
         Preset(name: "Instance 1", url: "https://project-exbanka.bytenity.com/instance1"),
+        Preset(name: "Instance 2", url: "https://project-exbanka.bytenity.com/instance2"),
+        Preset(name: "Instance 3", url: "https://project-exbanka.bytenity.com/instance3"),
         Preset(name: "Localhost", url: "http://localhost:8080"),
     ]
 

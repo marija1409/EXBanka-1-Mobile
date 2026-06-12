@@ -3,6 +3,8 @@ import SwiftUI
 struct MoreMenuView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var themeManager: ThemeManager
+    @ObservedObject private var backendConfig = BackendConfig.shared
+    @State private var showBackendSelector = false
 
     var body: some View {
         ZStack {
@@ -54,6 +56,30 @@ struct MoreMenuView: View {
                                     label: themeManager.isDarkMode ? "Light Mode" : "Dark Mode"
                                 )
                             }
+                            Divider().padding(.leading, AppTheme.padding + 24 + AppTheme.padding)
+                            Button(action: { showBackendSelector = true }) {
+                                HStack(spacing: AppTheme.padding) {
+                                    Image(systemName: "server.rack")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.appPrimary)
+                                        .frame(width: 24)
+                                    Text("Backend Server")
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.appForeground)
+                                    Spacer()
+                                    Text(backendConfig.displayName)
+                                        .font(.caption)
+                                        .foregroundColor(.appMutedForeground)
+                                        .lineLimit(1)
+                                        .truncationMode(.middle)
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.appMutedForeground)
+                                }
+                                .padding(.horizontal, AppTheme.padding)
+                                .padding(.vertical, 14)
+                                .contentShape(Rectangle())
+                            }
                         }
 
                         Button(action: { Task { await logout() } }) {
@@ -68,6 +94,9 @@ struct MoreMenuView: View {
         }
         .navigationTitle("More")
         .navigationBarTitleDisplayMode(.large)
+        .sheet(isPresented: $showBackendSelector) {
+            BackendSelectorView()
+        }
     }
 
     private func logout() async {

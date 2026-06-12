@@ -9,7 +9,7 @@ enum Endpoint {
     case logout
     case me
     case myAccounts
-    case paymentsForAccount(accountNumber: String)
+    case paymentsForAccount(accountId: Int)
 
     // Mobile Auth
     case mobileRequestActivation
@@ -66,9 +66,8 @@ enum Endpoint {
             return "\(Endpoint.baseURL)/api/v3/me"
         case .myAccounts:
             return "\(Endpoint.baseURL)/api/v3/me/accounts"
-        case .paymentsForAccount(let number):
-            let encoded = number.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? number
-            return "\(Endpoint.baseURL)/api/v3/payments/account/\(encoded)"
+        case .paymentsForAccount(let id):
+            return "\(Endpoint.baseURL)/api/v3/accounts/\(id)/payments"
 
         case .mobileRequestActivation:
             return "\(Endpoint.baseURL)/api/v3/mobile/auth/request-activation"
@@ -152,9 +151,8 @@ enum Endpoint {
         case .logout: return "/api/v3/auth/logout"
         case .me: return "/api/v3/me"
         case .myAccounts: return "/api/v3/me/accounts"
-        case .paymentsForAccount(let number):
-            let encoded = number.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? number
-            return "/api/v3/payments/account/\(encoded)"
+        case .paymentsForAccount(let id):
+            return "/api/v3/accounts/\(id)/payments"
         case .mobileRequestActivation: return "/api/v3/mobile/auth/request-activation"
         case .mobileActivate: return "/api/v3/mobile/auth/activate"
         case .mobileRefresh: return "/api/v3/mobile/auth/refresh"
